@@ -1,17 +1,84 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, Switch, TextInput, AsyncStorage, TouchableWithoutFeedback } from 'react-native';
+import {
+    StyleSheet,
+    View,
+    ScrollView,
+    Switch,
+    TextInput,
+    AsyncStorage,
+    TouchableWithoutFeedback,
+    Button
+} from 'react-native';
+import { StackNavigator } from 'react-navigation';
 import { Constants } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 
 const DONE = 'Done';
 const NOT_DONE = 'NotDone';
 const NOTES_STORAGE_KEY = 'notes';
+const NOTES_UPDATE = 'NOTES_UPDATE';
 
-export default class App extends React.Component {
+class HomeScreen extends React.Component {
+    state = {
+        notes: [],
+        newNoteText: '',
+        action: ''
+    };
+
+    componentDidUpdate() {
+        if (this.state.action === NOTES_UPDATE)
+            AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(this.state.notes)).then(this.changeView);
+    }
+
+    async componentDidMount() {
+        try {
+            const notes = await AsyncStorage.getItem(NOTES_STORAGE_KEY);
+            this.setState({ notes: JSON.parse(notes) || [] });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    onInputChange = newText => {
+        this.setState({ newNoteText: newText });
+    };
+
+    onInputSubmit = () => {
+        this.setState(prevState => ({
+            notes: prevState.notes.concat({
+                message: prevState.newNoteText,
+                isDone: NOT_DONE,
+                creationDate: new Date().toLocaleTimeString()
+            }),
+            newNoteText: '',
+            action: NOTES_UPDATE
+        }));
+    };
+
+    changeView = () => {
+        this.props.navigation.navigate('Items', this.state.notes);
+    };
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <TextInput
+                    value={this.state.newNoteText}
+                    placeholder="Add note"
+                    onSubmitEditing={this.onInputSubmit}
+                    onChangeText={this.onInputChange}
+                    autoFocus
+                />
+                <Button color="blue" onPress={this.changeView} title="Go to notes" />
+            </View>
+        );
+    }
+}
+
+class ItemsScreen extends React.Component {
     state = {
         notes: [],
         filter: NOT_DONE,
-        newNoteText: '',
         editElement: {
             newNoteText: '',
             index: 0
@@ -33,22 +100,6 @@ export default class App extends React.Component {
         }));
     };
 
-    onInputChange = newText => {
-        this.setState({ newNoteText: newText });
-    };
-
-    onInputSubmit = () => {
-        this.setState(prevState => ({
-            notes: prevState.notes.concat({
-                message: prevState.newNoteText,
-                isDone: NOT_DONE,
-                creationDate: new Date().toLocaleTimeString()
-            }),
-            newNoteText: ''
-        }));
-        AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(this.state.notes));
-    };
-
     onElementEdit = (newNoteText, index) => {
         this.setState({
             editElement: {
@@ -63,7 +114,6 @@ export default class App extends React.Component {
             const notes = prevState.notes;
             notes[prevState.editElement.index].message = prevState.editElement.newNoteText;
             notes[prevState.editElement.index].creationDate = new Date().toLocaleTimeString();
-            AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
 
             return {
                 notes,
@@ -79,22 +129,19 @@ export default class App extends React.Component {
         this.setState(prevState => {
             const notes = prevState.notes;
             notes.splice(index, 1);
-            AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
 
             return { notes };
         });
     };
 
+    goBack = () => {
+        AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(this.state.notes)).then(this.props.navigation.goBack);
+    };
+
     render() {
         return (
             <View style={styles.container}>
-                <TextInput
-                    value={this.state.newNoteText}
-                    placeholder="Add note"
-                    onSubmitEditing={this.onInputSubmit}
-                    onChangeText={this.onInputChange}
-                    autoFocus
-                />
+                <Button title="Go back" onPress={this.goBack} />
                 <Switch value={this.state.filter === DONE} onValueChange={this.onSwitchStatus} />
                 <ScrollView>
                     {this.state.notes.filter(note => note.isDone === this.state.filter).map((note, index) => (
@@ -113,6 +160,26 @@ export default class App extends React.Component {
                 </ScrollView>
             </View>
         );
+    }
+}
+
+const Navigator = StackNavigator(
+    {
+        Home: {
+            screen: HomeScreen
+        },
+        Items: {
+            screen: ItemsScreen
+        }
+    },
+    {
+        initialRouteName: 'Home'
+    }
+);
+
+export default class App extends React.Component {
+    render() {
+        return <Navigator />;
     }
 }
 
