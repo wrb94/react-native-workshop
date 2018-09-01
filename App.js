@@ -9,7 +9,8 @@ export default class App extends React.Component {
     state = {
         notes: new Array(100).fill(0).map((_, index) => ({
             message: `Note ${index + 1}`,
-            isDone: Math.random() > 0.5 ? DONE : NOT_DONE
+            isDone: Math.random() > 0.5 ? DONE : NOT_DONE,
+            creationDate: new Date().toLocaleTimeString()
         })),
         filter: DONE
     };
@@ -28,7 +29,7 @@ export default class App extends React.Component {
                     <View>
                         {this.state.notes.filter(note => note.isDone === this.state.filter).map((note, index) => (
                             <Text key={index} style={note.isDone === DONE ? styles.doneTask : styles.notDoneTask}>
-                                {`${index + 1}. ${note.message}`}
+                                {`${index + 1}. ${note.message}  ${note.creationDate}`}
                             </Text>
                         ))}
                     </View>
