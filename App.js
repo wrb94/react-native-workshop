@@ -10,7 +10,7 @@ export default class App extends React.Component {
         notes: new Array(100).fill(0).map((_, index) => ({
             message: `Note ${index + 1}`,
             isDone: Math.random() > 0.5 ? DONE : NOT_DONE,
-            creationDate: new Date().toLocaleTimeString()
+            creationDate: this.getCreationDate()
         })),
         filter: DONE
     };
@@ -20,6 +20,16 @@ export default class App extends React.Component {
             filter: prevState.filter === DONE ? NOT_DONE : DONE
         }));
     };
+
+    getCreationDate() {
+        const today = Math.random() > 0.5;
+        const date = new Date();
+        let day = date.getDate();
+        if (!today) --day;
+        date.setDate(day);
+
+        return date.toLocaleDateString();
+    }
 
     render() {
         return (
