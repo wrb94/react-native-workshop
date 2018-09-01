@@ -1,15 +1,21 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
 
 export default class App extends React.Component {
     state = {
-        note: 'Some note'
+        notes: new Array(100).fill(0).map((_, index) => `Note ${index}`)
     };
 
     render() {
         return (
             <View style={styles.container}>
-                <Text>{this.state.note}</Text>
+                <ScrollView>
+                    <View>
+                        {this.state.notes.map((note, index) => (
+                            <Text key={index}>{note}</Text>
+                        ))}
+                    </View>
+                </ScrollView>
             </View>
         );
     }
