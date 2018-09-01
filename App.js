@@ -1,21 +1,26 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, Switch, TextInput } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Switch, TextInput, AsyncStorage } from 'react-native';
 import { Constants } from 'expo';
 
 const DONE = 'Done';
 const NOT_DONE = 'NotDone';
+const NOTES_STORAGE_KEY = 'notes';
 
 export default class App extends React.Component {
     state = {
-        // notes: new Array(5).fill(0).map((_, index) => ({
-        //     message: `Note ${index + 1}`,
-        //     isDone: Math.random() > 0.5 ? DONE : NOT_DONE,
-        //     creationDate: new Date().toLocaleTimeString()
-        // })),
         notes: [],
         filter: DONE,
         newNoteText: ''
     };
+
+    async componentDidMount() {
+        try {
+            const notes = await AsyncStorage.getItem(NOTES_STORAGE_KEY);
+            this.setState({ notes: JSON.parse(notes) || [] });
+        } catch (e) {
+            console.log(e);
+        }
+    }
 
     onSwitchStatus = () => {
         this.setState(prevState => ({
@@ -36,6 +41,7 @@ export default class App extends React.Component {
             }),
             newNoteText: ''
         }));
+        AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(this.state.notes));
     };
 
     render() {
