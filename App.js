@@ -7,7 +7,8 @@ import {
     TextInput,
     AsyncStorage,
     TouchableWithoutFeedback,
-    Button
+    Button,
+    MapView
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import { Constants } from 'expo';
@@ -22,8 +23,21 @@ class HomeScreen extends React.Component {
     state = {
         notes: [],
         newNoteText: '',
-        action: ''
+        action: '',
+        location: null
     };
+
+    componentWillMount() {
+        const geolocation = navigator.geolocation;
+
+        if (geolocation.requestAuthorization) {
+            geolocation.requestAuthorization();
+        }
+
+        geolocation.getCurrentPosition(location => {
+            return this.setState({ location });
+        });
+    }
 
     componentDidUpdate() {
         if (this.state.action === NOTES_UPDATE)
@@ -48,7 +62,8 @@ class HomeScreen extends React.Component {
             notes: prevState.notes.concat({
                 message: prevState.newNoteText,
                 isDone: NOT_DONE,
-                creationDate: new Date().toLocaleTimeString()
+                creationDate: new Date().toLocaleTimeString(),
+                location: prevState.location
             }),
             newNoteText: '',
             action: NOTES_UPDATE
