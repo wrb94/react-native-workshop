@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Constants } from 'expo';
 
 export default class App extends React.Component {
     state = {
@@ -8,15 +9,13 @@ export default class App extends React.Component {
 
     render() {
         return (
-            <View style={styles.container}>
-                <ScrollView>
-                    <View>
-                        {this.state.notes.map((note, index) => (
-                            <Text key={index}>{note}</Text>
-                        ))}
-                    </View>
-                </ScrollView>
-            </View>
+            <ScrollView style={styles.scrollView}>
+                <View style={styles.container}>
+                    {this.state.notes.map((note, index) => (
+                        <Text key={index}>{note}</Text>
+                    ))}
+                </View>
+            </ScrollView>
         );
     }
 }
@@ -27,5 +26,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    scrollView: {
+        paddingTop: Constants.statusBarHeight
     }
 });
