@@ -98,14 +98,15 @@ export default class App extends React.Component {
                 <Switch value={this.state.filter === DONE} onValueChange={this.onSwitchStatus} />
                 <ScrollView>
                     {this.state.notes.filter(note => note.isDone === this.state.filter).map((note, index) => (
-                        <View key={index}>
+                        <View key={index} style={styles.noteContainer}>
                             <TextInput
+                                style={styles.noteInputContainer}
                                 value={note.message}
                                 onChangeText={value => this.onElementEdit(value, index)}
                                 onSubmitEditing={this.onElementSubmit}
                             />
                             <TouchableWithoutFeedback onPress={() => this.removeElement(index)}>
-                                <Ionicons name="md-close" size={12} color="red" />
+                                <Ionicons name="md-close" size={18} color="red" style={styles.removeIconContainer} />
                             </TouchableWithoutFeedback>
                         </View>
                     ))}
@@ -120,7 +121,18 @@ const styles = StyleSheet.create({
         paddingTop: Constants.statusBarHeight,
         flex: 1,
         backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    noteContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    noteInputContainer: {
+        paddingRight: 10
+    },
+    removeIconContainer: {
+        paddingTop: 1
     }
 });
