@@ -8,16 +8,18 @@ import {
     AsyncStorage,
     TouchableWithoutFeedback,
     Button,
-    MapView
+    Dimensions,
+    Alert
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import { Constants } from 'expo';
+import { Constants, MapView } from 'expo';
 import { Ionicons } from '@expo/vector-icons';
 
 const DONE = 'Done';
 const NOT_DONE = 'NotDone';
 const NOTES_STORAGE_KEY = 'notes';
 const NOTES_UPDATE = 'NOTES_UPDATE';
+const { width } = Dimensions.get('window');
 
 class HomeScreen extends React.Component {
     state = {
@@ -70,8 +72,13 @@ class HomeScreen extends React.Component {
         }));
     };
 
-    changeView = () => {
-        this.props.navigation.navigate('Items', this.state.notes);
+    goToNotes = () => {
+        this.props.navigation.navigate('Items');
+    };
+
+    showLocalization = () => {
+        if (this.state.location) this.props.navigation.navigate('Localization', { location: this.state.location });
+        else Alert.alert('Navigation', 'Navigation not ready. Wait for a while');
     };
 
     render() {
@@ -84,7 +91,8 @@ class HomeScreen extends React.Component {
                     onChangeText={this.onInputChange}
                     autoFocus
                 />
-                <Button color="blue" onPress={this.changeView} title="Go to notes" />
+                <Button color="blue" onPress={this.goToNotes} title="Go to notes" />
+                <Button color="blue" onPress={this.showLocalization} title="Show localization" />
             </View>
         );
     }
@@ -178,6 +186,33 @@ class ItemsScreen extends React.Component {
     }
 }
 
+class NoteLocation extends React.Component {
+    location = this.props.navigation.state.params.location;
+
+    setMap = map => {
+        this.map = map;
+        this.showLocation();
+    };
+
+    showLocation = () => {
+        if (!this.map || !this.location) return;
+
+        this.map.fitToCoordinates([this.location.coords], {
+            animated: true
+        });
+    };
+
+    render() {
+        return (
+            <View style={styles.container}>
+                <MapView ref={this.setMap} style={styles.map} maxZoomLevel={19}>
+                    {this.location && <MapView.Marker coordinate={this.location.coords} />}
+                </MapView>
+            </View>
+        );
+    }
+}
+
 const Navigator = StackNavigator(
     {
         Home: {
@@ -185,6 +220,9 @@ const Navigator = StackNavigator(
         },
         Items: {
             screen: ItemsScreen
+        },
+        Localization: {
+            screen: NoteLocation
         }
     },
     {
@@ -216,5 +254,10 @@ const styles = StyleSheet.create({
     },
     removeIconContainer: {
         paddingTop: 1
+    },
+    map: {
+        width,
+        minHeight: 100,
+        flex: 1
     }
 });
